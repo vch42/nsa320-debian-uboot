@@ -1,0 +1,61 @@
+arcNumber=3956
+machid=0x118f
+mainlineLinux=yes
+
+preboot=setenv stderr serial; setenv stdin serial; setenv stdout serial; setenv baudrate 115200; setenv console ttyS0,$baudrate; setenv bootdelay 10
+
+stderr=serial
+stdin=serial
+stdout=serial
+baudrate=115200
+console=ttyS0,$baudrate
+bootdelay=10
+
+led_error=orange blinking
+led_exit=green off
+led_init=green blinking
+
+ethact=egiga0
+ethaddr=28:28:5d:16:09:ee
+
+mtdids=nand0=orion_nand
+mtdparts=mtdparts=nand_mtd:0x100000(uboot),0x80000(uboot_env)
+partition=nand0,2
+
+file_dtb=/boot/dts/kirkwood-nsa320.dtb
+file_uimage=/boot/uImage
+file_uinitrd=/boot/uInitrd
+file_uenv=/boot/uEnv
+
+addr_uimage=0x0800000
+addr_uenv=0x0810000
+addr_uinitrd=0x1100000
+addr_dtb=0x1c00000
+
+load_dtb=echo loading DTB $file_dtb ...; load $bootdev $device $addr_dtb $file_dtb
+load_uimage=echo loading uImage $file_uimage ...; load $bootdev $device $addr_uimage $file_uimage
+load_uinitrd=echo loading uInitrd $file_uinitrd ...; load $bootdev $device $addr_uinitrd $file_uinitrd
+
+devices=usb ide mmc
+disks=0 1 2 3
+device=0:1
+bootdev=usb
+usb_ready_retry=15
+init=/bin/systemd
+rootfs=LABEL=rootfs
+rootdelay=10
+rootfstype=ext4
+
+set_bootargs=setenv bootargs console=$console root=$rootfs rootdelay=$rootdelay rootfstype=$rootfstype $mtdparts init=$init $custom_params
+scan_disk=echo running scan_disk ...; scan_done=0; setenv scan_usb "usb start"; setenv scan_ide "ide reset"; setenv scan_mmc "mmc rescan"; for dev in $devices; do if test $scan_done -eq 0; then echo Scan device $dev; run scan_$dev; for disknum in $disks; do if test $scan_done -eq 0; then echo device $dev $disknum:1; if load $dev $disknum:1 $addr_uimage $file_uimage 1; then scan_done=1; echo Found bootable drive on $dev $disknum; setenv device $disknum:1; setenv bootdev $dev; fi; fi; done; fi; done; sleep 3
+
+bootcmd=mw 0x800000 0 1; run bootcmd_uenv; run scan_disk; run set_bootargs; run bootcmd_exec; sleep 5; reset
+bootcmd_exec=run load_uimage; if run load_uinitrd; then if run load_dtb; then bootm $addr_uimage $addr_uinitrd $addr_dtb; else bootm $addr_uimage $addr_uinitrd; fi; else if run load_dtb; then bootm $addr_uimage - $addr_dtb; else bootm $addr_uimage; fi; fi
+bootcmd_uenv=run uenv_load; if test $uenv_loaded -eq 1; then run uenv_import; fi; sleep 3
+
+uenv_import=echo importing envs ...; env import -t $addr_uenv $filesize
+uenv_init_devices=setenv init_usb "usb start"; setenv init_ide "ide reset"; setenv init_mmc "mmc rescan"; for devtype in $devices; do run init_$devtype; done; sleep 3
+uenv_load=run uenv_init_devices; setenv uenv_loaded 0; for devtype in $devices; do for disknum in 0; do run uenv_read_disk; done; done;
+uenv_read_disk=if test $devtype -eq mmc; then if $devtype part; then run uenv_read; fi; else if $devtype part $disknum; then run uenv_read; fi; fi
+uenv_read=echo loading envs from $devtype $disknum ...; if load $devtype $disknum:1 $addr_uenv $file_uenv; then setenv uenv_loaded 1; fi
+
