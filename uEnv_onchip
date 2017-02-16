@@ -48,7 +48,7 @@ bootcmd_uenv=run uenv_load; if test $uenv_loaded -eq 1; then run uenv_import; fi
 
 uenv_import=echo importing envs ...; env import -t $addr_uenv $filesize
 uenv_init_devices=setenv init_usb "usb start"; setenv init_ide "ide reset"; setenv init_mmc "mmc rescan"; for devtype in $devices; do run init_$devtype; done; sleep 3
-uenv_load=run uenv_init_devices; setenv uenv_loaded 0; for devtype in $devices; do for disknum in 0; do run uenv_read_disk; done; done;
+uenv_load=run uenv_init_devices; setenv uenv_loaded 0; for devtype in $devices; do for disknum in $disks; do run uenv_read_disk; done; done;
 uenv_read_disk=if test $devtype -eq mmc; then if $devtype part; then run uenv_read; fi; else if $devtype part $disknum; then run uenv_read; fi; fi
 uenv_read=echo loading envs from $devtype $disknum ...; if load $devtype $disknum:1 $addr_uenv $file_uenv; then setenv uenv_loaded 1; fi
 
