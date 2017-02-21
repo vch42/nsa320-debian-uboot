@@ -40,16 +40,16 @@ rootdelay=10
 
 
 set_bootargs=setenv bootargs console=$console root=$rootfs rootdelay=$rootdelay rootfstype=$rootfstype $mtdparts $initsystem $custom_params
-scan_disk=echo running scan_disk ...; scan_done=0; setenv scan_usb "usb start"; setenv scan_ide "ide reset"; setenv scan_mmc "mmc rescan"; for dev in $devices; do if test $scan_done -eq 0; then echo Scan device $dev; run scan_$dev; for disknum in $disks; do if test $scan_done -eq 0; then echo device $dev $disknum:1; if load $dev $disknum:1 $addr_uimage $file_uimage 1; then scan_done=1; echo Found bootable drive on $dev $disknum; setenv device $disknum:1; setenv bootdev $dev; fi; fi; done; fi; done; sleep 3
+scan_disk=echo running scan_disk ...; scan_done=0; setenv scan_usb "usb start"; setenv scan_ide "ide reset"; for dev in $devices; do if test $scan_done -eq 0; then echo Scan device $dev; run scan_$dev; for disknum in $disks; do if test $scan_done -eq 0; then echo device $dev $disknum:1; if load $dev $disknum:1 $addr_uimage $file_uimage 1; then scan_done=1; echo Found bootable drive on $dev $disknum; setenv device $disknum:1; setenv bootdev $dev; fi; fi; done; fi; done; sleep 3
 
 bootcmd=mw 0x800000 0 1; run bootcmd_uenv; run scan_disk; run set_bootargs; run bootcmd_exec; sleep 5; reset
 bootcmd_exec=run load_uimage; if run load_uinitrd; then if run load_dtb; then bootm $addr_uimage $addr_uinitrd $addr_dtb; else bootm $addr_uimage $addr_uinitrd; fi; else if run load_dtb; then bootm $addr_uimage - $addr_dtb; else bootm $addr_uimage; fi; fi
 bootcmd_uenv=run uenv_load; if test $uenv_loaded -eq 1; then run uenv_import; fi; sleep 3
 
 uenv_import=echo importing envs ...; env import -t $addr_uenv $filesize
-uenv_init_devices=setenv init_usb "usb start"; setenv init_ide "ide reset"; setenv init_mmc "mmc rescan"; for devtype in $devices; do run init_$devtype; done; sleep 3
+uenv_init_devices=setenv init_usb "usb start"; setenv init_ide "ide reset"; for devtype in $devices; do run init_$devtype; done; sleep 3
 uenv_load=run uenv_init_devices; setenv uenv_loaded 0; for devtype in $devices; do for disknum in $disks; do run uenv_read_disk; done; done;
-uenv_read_disk=if test $devtype -eq mmc; then if $devtype part; then run uenv_read; fi; else if $devtype part $disknum; then run uenv_read; fi; fi
-uenv_read=echo loading envs from $devtype $disknum ...; if test $uenv_loaded -ne 1; then if load $devtype $disknum:1 $addr_uenv $file_uenv; then setenv uenv_loaded 1; fi; fi
+uenv_read_disk=if $devtype part $disknum; then run uenv_read; fi; fi
+uenv_read=if test $uenv_loaded -ne 1; then if load $devtype $disknum:1 $addr_uenv $file_uenv; then setenv uenv_loaded 1; echo loaded envs from $devtype $disknum ...; fi; fi
 
 
