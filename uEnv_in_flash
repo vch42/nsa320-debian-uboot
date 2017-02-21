@@ -31,7 +31,7 @@ load_dtb=echo loading DTB $file_dtb ...; load $bootdev $device $addr_dtb $file_d
 load_uimage=echo loading uImage $file_uimage ...; load $bootdev $device $addr_uimage $file_uimage
 load_uinitrd=echo loading uInitrd $file_uinitrd ...; load $bootdev $device $addr_uinitrd $file_uinitrd
 
-devices=usb ide mmc
+devices=usb ide
 disks=0 1 2 3
 device=0:1
 bootdev=usb
@@ -50,5 +50,6 @@ uenv_import=echo importing envs ...; env import -t $addr_uenv $filesize
 uenv_init_devices=setenv init_usb "usb start"; setenv init_ide "ide reset"; setenv init_mmc "mmc rescan"; for devtype in $devices; do run init_$devtype; done; sleep 3
 uenv_load=run uenv_init_devices; setenv uenv_loaded 0; for devtype in $devices; do for disknum in $disks; do run uenv_read_disk; done; done;
 uenv_read_disk=if test $devtype -eq mmc; then if $devtype part; then run uenv_read; fi; else if $devtype part $disknum; then run uenv_read; fi; fi
-uenv_read=echo loading envs from $devtype $disknum ...; if load $devtype $disknum:1 $addr_uenv $file_uenv; then setenv uenv_loaded 1; fi
+uenv_read=echo loading envs from $devtype $disknum ...; if test $uenv_loaded -ne 1; then if load $devtype $disknum:1 $addr_uenv $file_uenv; then setenv uenv_loaded 1; fi; fi
+
 
