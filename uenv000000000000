@@ -49,7 +49,7 @@ bootcmd_exec=run load_uimage; if run load_uinitrd; then if run load_dtb; then bo
 bootcmd_uenv=run uenv_load; if test $uenv_loaded -eq 1; then run uenv_import; fi; sleep 3
 
 uenv_import=echo importing envs ...; env import -t $addr_uenv $filesize
-uenv_init_devices=setenv init_usb "usb start"; setenv init_ide "ide reset"; for devtype in $devices; do run init_$devtype; done; sleep 3
-uenv_load=run uenv_init_devices; setenv uenv_loaded 0; for devtype in $devices; do for disknum in $disks; do run uenv_read_disk; done; done;
+uenv_init_devices=setenv init_usb "usb start"; setenv init_ide "ide reset"
+uenv_load=run uenv_init_devices; setenv uenv_loaded 0; for devtype in $devices; do run init_$devtype; sleep 3; for disknum in $disks; do run uenv_read_disk; done; done;
 uenv_read_disk=if $devtype part $disknum; then run uenv_read; fi; fi
 uenv_read=if test $uenv_loaded -ne 1; then if load $devtype $disknum:1 $addr_uenv $file_uenv; then setenv uenv_loaded 1; echo loaded envs from $devtype $disknum ...; fi; fi
