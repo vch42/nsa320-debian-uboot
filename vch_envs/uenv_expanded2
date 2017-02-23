@@ -63,23 +63,23 @@ flash_new_uenv=
 
 
 load_dtb=
-	echo #################################################;
+	echo "#################################################";
 	echo "  LOADING DTB $file_dtb ...";
-	echo #################################################;
+	echo "#################################################";
 	load $bootdev $device $addr_dtb $file_dtb
 
 
 load_uimage=
-	echo #################################################;
+	echo "#################################################";
 	echo "  LOADING uImage $file_uimage ...";
-	echo #################################################;
+	echo "#################################################";
 	load $bootdev $device $addr_uimage $file_uimage
 
 
 load_uinitrd=
-	echo #################################################;
+	echo "#################################################";
 	echo "  LOADING uInitrd $file_uinitrd ..." ;
-	echo #################################################;
+	echo "#################################################";
 	load $bootdev $device $addr_uinitrd $file_uinitrd
 
 
@@ -88,25 +88,25 @@ set_bootargs=
 
 
 scan_disk=
-	echo #################################################;
+	echo "#################################################";
 	echo "  SCANNING FOR BOOT DRIVE...";
 	echo "  BOOT PRIORITY: $devices ";
-	echo #################################################;
+	echo "#################################################";
 	run set_init_devices;
 	for dev in $devices; do
 		if test $scan_done -eq 0; then
 			echo "  SCAN DEVICE $dev";
-			echo #################################################;
+			echo "#################################################";
 			run init_$dev;
 			for disknum in $disks; do
 				if test $scan_done -eq 0; then
 					echo "  DEVICE $dev $disknum:1";
-					echo #################################################;
+					echo "#################################################";
 					if load $dev $disknum:1 $addr_uimage $file_uimage 1; then
 						setenv scan_done 1;
-						echo #################################################;
+						echo "#################################################";
 						echo "  FOUND BOOTABLE DRIVE ON $dev $disknum";
-						echo #################################################;
+						echo "#################################################";
 						setenv device $disknum:1;
 						setenv bootdev $dev;
 					fi;
@@ -146,20 +146,20 @@ bootcmd_exec=
 
 
 bootcmd_uenv=
-	echo #################################################;
+	echo "#################################################";
 	echo "  LOOKING FOR EXTRA ENV FILE: $file_uenv";
 	echo "  ON BOOT PARTITION: $bootdev $device ";
-	echo #################################################;
+	echo "#################################################";
 	if load $bootdev $device $addr_uenv $file_uenv; then
 		setenv uenv_loaded 1;
-		echo #################################################;
+		echo "#################################################";
 		echo "  LOADED EXTRA ENVS FROM $devtype $disknum ... ";
-		echo #################################################;
+		echo "#################################################";
 	fi;
 	if test $uenv_loaded -eq 1; then
-		echo #################################################;
+		echo "#################################################";
 		echo "  IMPORTING EXTRA ENVS...";
-		echo #################################################;
+		echo "#################################################";
 		env import -t $addr_uenv $filesize;
 	fi;
 	sleep 3
