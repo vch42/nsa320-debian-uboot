@@ -40,19 +40,15 @@ set_init_devices=
 	setenv init_ide "ide reset"
 
 
-load_dtb=
-	echo loading DTB $file_dtb ...;
-	load $bootdev $device $addr_dtb $file_dtb
-
-
-load_uimage=
-	echo loading uImage $file_uimage ...;
-	load $bootdev $device $addr_uimage $file_uimage
-
-
-load_uinitrd=
-	echo loading uInitrd $file_uinitrd ...;
-	load $bootdev $device $addr_uinitrd $file_uinitrd
+flash_new_uboot=
+	run set_init_devices;
+	run init_usb;
+	sleep 5;
+	if load usb 0:1 $addr_uimage uboot.img; then
+		nand erase 0x0 0xc0000;
+		nand write $addr_uimage 0x0 0x80000;
+	fi;
+	reset
 
 
 flash_new_uenv=
@@ -66,15 +62,19 @@ flash_new_uenv=
 	reset
 
 
-flash_new_uboot=
-	run set_init_devices;
-	run init_usb;
-	sleep 5;
-	if load usb 0:1 $addr_uimage uboot.img; then
-		nand erase 0x0 0xc0000;
-		nand write $addr_uimage 0x0 0x80000;
-	fi;
-	reset
+load_dtb=
+	echo loading DTB $file_dtb ...;
+	load $bootdev $device $addr_dtb $file_dtb
+
+
+load_uimage=
+	echo loading uImage $file_uimage ...;
+	load $bootdev $device $addr_uimage $file_uimage
+
+
+load_uinitrd=
+	echo loading uInitrd $file_uinitrd ...;
+	load $bootdev $device $addr_uinitrd $file_uinitrd
 
 
 set_bootargs=
