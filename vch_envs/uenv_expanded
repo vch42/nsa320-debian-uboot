@@ -162,7 +162,7 @@ uenv_read_disk=
 
 uenv_read=
 	if load $devtype $disknum:1 $addr_uenv $file_uenv; then
-		setenv uenv_loaded 1;
+		uenv_loaded=1;
 		echo loaded envs from $devtype $disknum ...;
 	fi
 
