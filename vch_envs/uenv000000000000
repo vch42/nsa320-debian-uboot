@@ -37,8 +37,8 @@ bootdev=usb
 usb_ready_retry=15
 rootdelay=10
 
-flash_new_uenv=usb start; sleep 5; if load usb 0:1 $addr_uenv uenv000000000000.img; then nand erase 0xc0000 0x40000; nand write $addr_uenv 0xc0000 0x40000; fi; reset
-flash_new_uboot=usb start; sleep 5; if load usb 0:1 $addr_uenv uboot.img; nand erase 0x0 0x100000; nand write $addr_uenv 0x0 0x100000; fi; reset
+flash_new_uenv=run 'usb start'; sleep 5; if load usb 0:1 $addr_uimage uenv000000000000.img; then nand erase 0xc0000 0x20000; nand write $addr_uimage 0xc0000 0x20000; fi; reset
+flash_new_uboot=run 'usb start'; sleep 5; if load usb 0:1 $addr_uimage uboot.img; nand erase 0x0 0xc0000; nand write $addr_uimage 0x0 0x80000; fi; reset
 
 set_bootargs=setenv bootargs console=$console root=$rootfs rootdelay=$rootdelay rootfstype=$rootfstype $mtdparts $initsystem $custom_params
 
