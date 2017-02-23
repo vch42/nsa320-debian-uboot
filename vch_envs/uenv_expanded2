@@ -121,8 +121,8 @@ scan_disk=
 bootcmd=
 	mw 0x800000 0 1;
 	run set_init_devices;
-	run bootcmd_uenv;
 	run scan_disk;
+	run bootcmd_uenv;
 	run set_bootargs;
 	run bootcmd_exec;
 	sleep 5;
