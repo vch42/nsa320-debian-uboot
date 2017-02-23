@@ -34,6 +34,7 @@ usb_ready_retry=15
 rootdelay=10
 uenv_loaded=0
 
+
 set_init_devices=
 	setenv init_usb "usb start";
 	setenv init_ide "ide reset"
@@ -52,7 +53,6 @@ load_uimage=
 load_uinitrd=
 	echo loading uInitrd $file_uinitrd ...;
 	load $bootdev $device $addr_uinitrd $file_uinitrd
-
 
 
 flash_new_uenv=
