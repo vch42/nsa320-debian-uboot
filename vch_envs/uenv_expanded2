@@ -153,7 +153,7 @@ bootcmd_uenv=
 	if load $bootdev $device $addr_uenv $file_uenv; then
 		setenv uenv_loaded 1;
 		echo "#################################################";
-		echo "  LOADED EXTRA ENVS FROM $devtype $disknum ... ";
+		echo "  LOADED EXTRA ENVS FROM $bootdev $device ... ";
 		echo "#################################################";
 	fi;
 	if test $uenv_loaded -eq 1; then
