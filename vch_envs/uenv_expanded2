@@ -149,50 +149,18 @@ bootcmd_exec=
 bootcmd_uenv=
 	echo #################################################;
 	echo "  LOOKING FOR EXTRA ENV FILE: $file_uenv";
+	echo "  ON BOOT PARTITION: $bootdev $device ";
 	echo #################################################;
-	run uenv_load;
-	if test $uenv_loaded -eq 1; then
-		run uenv_import;
-	fi;
-	sleep 3
-
-
-uenv_load=
-	uenv_loaded=0;
-	for devtype in $devices; do
-		if test $uenv_loaded -ne 1; then
-			run init_$devtype;
-			sleep 3;
-			for disknum in $disks; do
-				run uenv_read_disk;
-			done;
-		fi;
-	done;
-
-
-uenv_read_disk=
-	if $devtype part $disknum; then
-		run uenv_read;
-	fi
-
-
-uenv_read=
-	if load $devtype $disknum:1 $addr_uenv $file_uenv; then
+	if load $bootdev $device $addr_uenv $file_uenv; then
 		uenv_loaded=1;
 		echo #################################################;
-		echo #################################################;
-		echo "                                               ";
 		echo "  LOADED EXTRA ENVS FROM $devtype $disknum ... ";
-		echo "                                               ";
-		echo #################################################;
 		echo #################################################;
 	fi
-
-
-uenv_import=
-	echo #################################################;
-	echo #################################################;
-	echo "  IMPORTING EXTRA ENVS...";
-	echo #################################################;
-	echo #################################################;
-	env import -t $addr_uenv $filesize
+	if test $uenv_loaded -eq 1; then
+		echo #################################################;
+		echo "  IMPORTING EXTRA ENVS...";
+		echo #################################################;
+		env import -t $addr_uenv $filesize
+	fi;
+	sleep 3
