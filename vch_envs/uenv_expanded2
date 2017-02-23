@@ -64,7 +64,7 @@ flash_new_uenv=
 
 load_dtb=
 	echo #################################################;
-	echo "  LOADING DTB $file_dtb ...;
+	echo "  LOADING DTB $file_dtb ...";
 	echo #################################################;
 	load $bootdev $device $addr_dtb $file_dtb
 
@@ -156,11 +156,11 @@ bootcmd_uenv=
 		echo #################################################;
 		echo "  LOADED EXTRA ENVS FROM $devtype $disknum ... ";
 		echo #################################################;
-	fi
+	fi;
 	if test $uenv_loaded -eq 1; then
 		echo #################################################;
 		echo "  IMPORTING EXTRA ENVS...";
 		echo #################################################;
-		env import -t $addr_uenv $filesize
+		env import -t $addr_uenv $filesize;
 	fi;
 	sleep 3
