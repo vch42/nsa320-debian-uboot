@@ -142,7 +142,7 @@ bootcmd_uenv=
 
 
 uenv_load=
-	setenv uenv_loaded 0;
+	uenv_loaded=0;
 	for devtype in $devices; do
 		if test $uenv_loaded -ne 1; then
 			run init_$devtype;
