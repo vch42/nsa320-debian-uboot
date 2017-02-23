@@ -107,6 +107,7 @@ scan_disk=
 
 bootcmd=
 	mw 0x800000 0 1;
+	run set_init_devices;
 	run bootcmd_uenv;
 	run scan_disk;
 	run set_bootargs;
@@ -141,7 +142,6 @@ bootcmd_uenv=
 
 
 uenv_load=
-	run set_init_devices;
 	setenv uenv_loaded 0;
 	for devtype in $devices; do
 		if test $uenv_loaded -ne 1; then
