@@ -33,7 +33,7 @@ bootdev=usb
 usb_ready_retry=15
 rootdelay=10
 uenv_loaded=0
-
+scan_done=0
 
 set_init_devices=
 	setenv init_usb "usb start";
@@ -92,7 +92,6 @@ scan_disk=
 	echo "  SCANNING FOR BOOT DRIVE...";
 	echo "  BOOT PRIORITY: $devices ";
 	echo #################################################;
-	scan_done=0;
 	run set_init_devices;
 	for dev in $devices; do
 		if test $scan_done -eq 0; then
@@ -104,7 +103,7 @@ scan_disk=
 					echo "  DEVICE $dev $disknum:1";
 					echo #################################################;
 					if load $dev $disknum:1 $addr_uimage $file_uimage 1; then
-						scan_done=1;
+						setenv scan_done 1;
 						echo #################################################;
 						echo "  FOUND BOOTABLE DRIVE ON $dev $disknum";
 						echo #################################################;
@@ -152,7 +151,7 @@ bootcmd_uenv=
 	echo "  ON BOOT PARTITION: $bootdev $device ";
 	echo #################################################;
 	if load $bootdev $device $addr_uenv $file_uenv; then
-		uenv_loaded=1;
+		setenv uenv_loaded 1;
 		echo #################################################;
 		echo "  LOADED EXTRA ENVS FROM $devtype $disknum ... ";
 		echo #################################################;
