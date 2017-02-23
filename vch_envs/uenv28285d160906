@@ -1,0 +1,58 @@
+preboot=setenv stderr serial; setenv stdin serial; setenv stdout serial; setenv baudrate 115200; setenv console ttyS0,$baudrate; setenv bootdelay 10
+stderr=serial
+stdin=serial
+stdout=serial
+baudrate=115200
+console=ttyS0,$baudrate
+bootdelay=10
+
+led_error=orange blinking
+led_exit=green off
+led_init=green blinking
+
+ethact=egiga0
+ethaddr=28:28:5d:16:09:06
+
+mtdids=nand0=orion_nand
+mtdparts=mtdparts=orion_nand:0x100000(uboot),0x80000(stock_uboot_env),0x80000(key_store),0x80000(info),0xA00000(etc),0xA00000(kernel_1),0x2FC0000(rootfs1),0xA00000(kernel_2),0x2FC0000(rootfs2)
+partition=nand0,2
+
+file_uimage=/boot/uImage
+file_uinitrd=/boot/uInitrd
+file_uenv=/boot/uEnv
+
+addr_uimage=0x0800000
+addr_uenv=0x0810000
+addr_uinitrd=0x1100000
+addr_dtb=0x1c00000
+
+devices=usb ide
+disks=0 1 2 3
+device=0:1
+bootdev=usb
+usb_ready_retry=15
+rootdelay=10
+uenv_loaded=0
+
+
+set_init_devices=setenv init_usb "usb start"; setenv init_ide "ide reset"
+
+flash_new_uboot=run set_init_devices; run init_usb; sleep 5; if load usb 0:1 $addr_uimage uboot.img; then nand erase 0x0 0xc0000; nand write $addr_uimage 0x0 0x80000; reset; fi
+
+flash_new_uenv=run set_init_devices; run init_usb; sleep 5; if load usb 0:1 $addr_uimage uenv28285d160906.img; then nand erase 0xc0000 0x20000; nand write $addr_uimage 0xc0000 0x20000; reset; fi
+
+load_dtb=echo #################################################; echo "  LOADING DTB $file_dtb ..."; echo #################################################; load $bootdev $device $addr_dtb $file_dtb
+
+load_uimage=echo #################################################; echo "  LOADING uImage $file_uimage ..."; echo #################################################; load $bootdev $device $addr_uimage $file_uimage
+
+load_uinitrd=echo #################################################; echo "  LOADING uInitrd $file_uinitrd ..." ; echo #################################################; load $bootdev $device $addr_uinitrd $file_uinitrd
+
+set_bootargs=setenv bootargs console=$console root=$rootfs rootdelay=$rootdelay rootfstype=$rootfstype $mtdparts $initsystem $custom_params
+
+scan_disk= echo #################################################; echo "  SCANNING FOR BOOT DRIVE..."; echo "  BOOT PRIORITY: $devices "; echo #################################################; scan_done=0; run set_init_devices; for dev in $devices; do if test $scan_done -eq 0; then echo "  SCAN DEVICE $dev"; echo #################################################; run init_$dev; for disknum in $disks; do if test $scan_done -eq 0; then echo "  DEVICE $dev $disknum:1"; echo #################################################; if load $dev $disknum:1 $addr_uimage $file_uimage 1; then scan_done=1; echo #################################################; echo "  FOUND BOOTABLE DRIVE ON $dev $disknum"; echo #################################################; setenv device $disknum:1; setenv bootdev $dev; fi; fi; done; fi; done; sleep 3
+
+bootcmd=mw 0x800000 0 1; run set_init_devices; run scan_disk; run bootcmd_uenv; run set_bootargs; run bootcmd_exec; sleep 5; reset
+
+bootcmd_exec=run load_uimage; if run load_uinitrd; then if run load_dtb; then bootm $addr_uimage $addr_uinitrd $addr_dtb; else bootm $addr_uimage $addr_uinitrd; fi; else if run load_dtb; then bootm $addr_uimage - $addr_dtb; else bootm $addr_uimage; fi; fi
+
+bootcmd_uenv=echo #################################################; echo "  LOOKING FOR EXTRA ENV FILE: $file_uenv"; echo "  ON BOOT PARTITION: $bootdev $device "; echo #################################################; if load $bootdev $device $addr_uenv $file_uenv; then uenv_loaded=1; echo #################################################; echo "  LOADED EXTRA ENVS FROM $devtype $disknum ... "; echo #################################################; fi; if test $uenv_loaded -eq 1; then echo #################################################; echo "  IMPORTING EXTRA ENVS..."; echo #################################################; env import -t $addr_uenv $filesize; fi; sleep 3
