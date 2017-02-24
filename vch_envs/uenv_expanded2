@@ -142,11 +142,12 @@ bootcmd_uenv=
 	echo "_________________________________________________";
 	echo "  LOOKING FOR EXTRA ENV FILE: $file_uenv";
 	echo "  ON BOOT PARTITION: $bootdev $device ";
-	echo "__________________________________________________";
+	echo "                                                 ";
 	if load $bootdev $device $addr_uenv $file_uenv; then
 		setenv uenv_loaded 1;
+		echo "                                                 ";
 		echo "  LOADED EXTRA ENVS FROM $bootdev $device ... ";
-		echo "_________________________________________________";
+		echo "                                                 ";
 	fi;
 	if test $uenv_loaded -eq 1; then
 		echo "  IMPORTING EXTRA ENVS...";
